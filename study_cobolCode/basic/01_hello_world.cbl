@@ -1,7 +1,11 @@
-       IDENTIFICATION DIVISION.
-       PROGRAM-ID. 01_HELLO_WORLD.
-
-       PROCEDURE DIVISION.
-       DISPLAY 'Hello.world.!'
-
-       STOP RUN.
+IDENTIFICATION DIVISION.                                     
+PROGRAM-ID. HELLO.                                            
+*
+ENVIRONMENT DIVISION.
+* 
+DATA DIVISION.
+*
+PROCEDURE DIVISION.                                          
+    DISPLAY 'HELLO WORLD'.                                   
+           MMSDEL*    STOP RUN.                                                    MFA010
+           MMSADD     GOBACK.                                                      MFA010
