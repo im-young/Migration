@@ -1,0 +1,101 @@
+ #DIVISION
+@Function RuleStart()
+    #----------------------------------------------------
+    # String
+    #----------------------------------------------------
+	@String sCheckText
+	@String sTemp
+    #----------------------------------------------------
+    # Int
+    #----------------------------------------------------
+    @Int nNewIdx
+    @Int nAddIdx
+    @Int nNewInnerIdx
+    @Int nAddInnerIdx
+    #----------------------------------------------------
+    # Initialize
+    #----------------------------------------------------
+    @Set nAddIdx = 0
+    @Set nAddInnerIdx = 0
+    @Set sTemp = [Null]
+
+    # Main Logic
+	@For %adx @Map.Get@(StartToken@) : @Map.Get@(LastToken@) 
+        #새로운 IDX 설정
+        @Set nNewIdx = %adx + @Get(nAddIdx)
+        @Set nAddIdx = 0 
+        @Set nNewInnerIdx = 0  
+            # PROGRAM-ID. 처리 ()
+            @If '^Data.Item[@Get(nNewIdx)].Name!' = 'PROGRAM-ID' @Then
+                @Set nNewInnerIdx = @Get(nNewIdx) +2
+                @Data(@Get(nNewIdx)) = [NULL]
+                @Data(@Get(nNewInnerIdx)) = [NULL]
+                #Naming(네이밍)
+                @Set sTemp = @Naming@(^Data.Item[@Get(nNewInnerIdx)].Name!@,Camel@)
+                @Set sTemp = @Naming@(^Data.Item[@Get(nNewInnerIdx)].Name!@,FirstUpper@)
+                @Set sTemp = @Naming@(^Data.Item[@Get(nNewInnerIdx)].Name!@,Hungarian@)
+                #@AddLine(@Get(nNewIdx)) =public class ^Data.Item[@Get(nNewInnerIdx)].Name! (){
+                @AddLine(@Get(nNewIdx)) =public class @Get(sTemp) (){
+                @Set nAddIdx = @Get(nAddIdx) + 2
+                # . 삭제
+                @If '^Data.Item[nNewInnerIdx+2].Type!' <> 'Comment' AND '^Data.Item[nNewInnerIdx+2].Name!' = '.' @Then
+                    @Data(nNewInnerIdx+2) = [NULL]
+                    @Set nAddIdx = @Get(nAddIdx) + 2
+                @End If
+            # method (PROCEDURE DIVISION)
+            @Else If '^Data.Item[@Get(nNewIdx)].Name!' = 'DISPLAY' @Then
+                @Data(@Get(nNewIdx)) = [NULL]
+                @DISPLAY(@Get(nNewIdx))
+                #@Continue
+            # STOP RUN : }
+            @Else If '^Data.Item[@Get(nNewIdx)].Name!' = 'STOP' AND  '^Data.Item[@Get(nNewIdx)+1].Name!' = 'RUN' @Then
+                @Data(@Get(nNewIdx)) = [NULL]
+                @Data(@Get(nNewIdx)+1) = [NULL]
+                @AddLine(@Get(nNewIdx)) =}                 
+            # DIVISION 텍스트 삭제
+            @Else
+                @Data(@Get(nNewIdx)) = [NULL]
+            @End If
+
+
+        # . 삭제
+        @If '^Data.Item[@Get(nNewIdx)+1].Type!' <> 'Comment' AND '^Data.Item[@Get(nNewIdx)+1].Name!' = '.' @Then
+            @Data(@Get(nNewIdx)+1) = [NULL]
+            @Set nAddIdx = @Get(nAddIdx) + 1
+        @End If
+        # ''. "" 삭제
+        # @If '^Data.Item[@Get(nNewIdx)+1].Type!' <> 'Comment' AND '^Data.Item[@Get(nNewIdx)+1].Name!' = ''' OR '^Data.Item[@Get(nNewIdx)+1].Type!' <> 'Comment' AND '^Data.Item[@Get(nNewIdx)+1].Name!' = '"'@Then
+        #     @Data(@Get(nNewIdx)+1) = [NULL]
+        #     @Set nAddIdx = @Get(nAddIdx) + 1
+        # @End If
+	@End For
+@End Function
+# DISPLAY
+@Function DISPLAY(idx)
+    #----------------------------------------------------
+    # String
+    #----------------------------------------------------
+	@String sCheckText
+	@String sTemp
+    #----------------------------------------------------
+    # Int
+    #----------------------------------------------------
+    @Int nNewIdx
+    @Int nAddIdx
+    @Int nNewInnerIdx
+    @Int nAddInnerIdx
+    #----------------------------------------------------
+    # Initialize
+    #----------------------------------------------------
+    @Set nAddIdx = 0
+    @Set nAddInnerIdx = 0
+    @Set sTemp = [Null]
+    ######  START ##########################
+    @Set nNewIdx = @Get(idx)+1
+    # 작은 따옴표 없애기 (첫번째랑 마지막 빼고 슬라이싱 해오기)
+    @Set sTemp = @SubString@(^Data.Item[@Get(nNewIdx)].Name!@,2@,^Data.Item[@Get(nNewIdx)].Length!-2@)
+    @Data(@Get(nNewIdx)) = [Null]    
+    #AddLine
+    @AddLine(@Get(nNewIdx)) =System.out.plintln("@Get(sTemp)");
+@End Function
+

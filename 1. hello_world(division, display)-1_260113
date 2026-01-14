@@ -1,0 +1,73 @@
+ #DIVISION
+@Function RuleStart()
+    #----------------------------------------------------
+    # String
+    #----------------------------------------------------
+	@String sCheckText
+	@String sTemp
+    #----------------------------------------------------
+    # Int
+    #----------------------------------------------------
+    @Int nNewIdx
+    @Int nAddIdx
+    @Int nNewInnerIdx
+    @Int nAddInnerIdx
+    #----------------------------------------------------
+    # Initialize
+    #----------------------------------------------------
+    @Set nAddIdx = 0
+    @Set nAddInnerIdx = 0
+    @Set sTemp = [Null]
+
+    # Main Logic
+	@For %adx @Map.Get@(StartToken@) : @Map.Get@(LastToken@) 
+        #새로운 IDX 설정
+        @Set nNewIdx = %adx + @Get(nAddIdx)   
+        # DIVISION
+		@If '^Data.Item[%adx].Name!' = 'DIVISION' @Then 
+			@Data(%adx) = [NULL]
+            # class (IDENTIFICATION DIVISION)
+			@If '^Data.Item[%adx-1].Name!' = 'IDENTIFICATION' @Then
+                @Data(%adx-1) = [NULL]
+                # PROGRAM-ID. 처리
+				@If '^Data.Item[%adx+1].Name!' = 'PROGRAM-ID' @Then
+					@Set sTemp = 'public class' '^Data.Item[%adx+2].Name!' '(){'
+                    @Data(%adx+1) = [NULL]
+					@AddLine(%adx+1) =@Get(sTemp)
+				@End If
+
+            # method (PROCEDURE DIVISION)
+			@Else If '^Data.Item[%adx-1].Name!' = 'PROCEDURE' @Then
+                @Set nNewInnerIdx = %adx-1
+                @Data(@Get(nNewInnerIdx)) = [NULL]
+                    @For %bdx @Get(nNewInnerIdx) : @Map.Get@(LastToken@) 
+                        #@Set nAddIdx = @Get(nAddIdx)+1
+                        @If condition @Then
+                            DISPLAY(%bdx)
+                            @Break
+                        # STOP RUN : }
+                        @Else If @Get(sCheckText) = 'STOP RUN' @Then
+                            @Data(%adx) = [NULL]
+                            @Data(%adx+1) = [NULL]
+                            @AddLine(%adx) =}                      
+                        @End If  
+                    @End For
+            # ENVIRONMENT DIVISION , DATA DIVISION
+			@Else
+				@Data(%adx-1) = [NULL]
+			@End If
+		@End If
+
+        # . 삭제
+        @If '^Data.Item[%adx+1].Type!' <> 'Comment' AND '^Data.Item[%adx+1].Name!' = '.' @Then
+            @Data(%adx+1) = [NULL]
+            @Set nAddIdx = @Get(nAddIdx) + 1
+        @End If
+	@End For
+@End Function
+# DISPLAY
+@Function DISPLAY(idx)
+	idx
+
+@End Function
+
