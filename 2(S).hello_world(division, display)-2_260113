@@ -46,12 +46,14 @@
             @Else If '^Data.Item[@Get(nNewIdx)].Name!' = 'DISPLAY' @Then
                 @Data(@Get(nNewIdx)) = [NULL]
                 @DISPLAY(@Get(nNewIdx))
+                @Set nAddIdx = @Get(nAddIdx) + 1
                 #@Continue
             # STOP RUN : }
             @Else If '^Data.Item[@Get(nNewIdx)].Name!' = 'STOP' AND  '^Data.Item[@Get(nNewIdx)+1].Name!' = 'RUN' @Then
                 @Data(@Get(nNewIdx)) = [NULL]
                 @Data(@Get(nNewIdx)+1) = [NULL]
-                @AddLine(@Get(nNewIdx)) =}                 
+                @AddLine(@Get(nNewIdx)) =} 
+                @Set nAddIdx = @Get(nAddIdx) + 1                
             # DIVISION 텍스트 삭제
             @Else
                 @Data(@Get(nNewIdx)) = [NULL]
@@ -97,5 +99,6 @@
     @Data(@Get(nNewIdx)) = [Null]    
     #AddLine
     @AddLine(@Get(nNewIdx)) =System.out.plintln("@Get(sTemp)");
+
 @End Function
 
