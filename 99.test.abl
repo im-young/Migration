@@ -1,0 +1,181 @@
+@Function test()
+    #----------------------------------------------------
+    # String
+    #----------------------------------------------------
+	@String sCheckText1
+    @String sCheckText2
+	@String sTemp
+    #----------------------------------------------------
+    # Int
+    #----------------------------------------------------
+    @Int nFnIndex
+    @Int nFAddIndex
+    @Int nAddTemp 
+
+    @Set nFnIndex = 1
+    #----------------------------------------------------------------------------
+    # Main Logic
+    #----------------------------------------------------------------------------
+    @For %adx @Map.Get@(StartToken@) : @Map.Get@(LastToken@) 
+        @Set nFnIndex = %adx
+# 가 ^Data.Item[]
+        @AddLine(@Get(nFnIndex)) =--------------- ^Data.Item[@Get(nFnIndex)].Name! ----------
+        @AddLine(@Get(nFnIndex)) =Count : ^Data.Count!
+        @AddLine(@Get(nFnIndex)) =Block_Level : ^Data.Item[@Get(nFnIndex)].Block_Level!
+        @AddLine(@Get(nFnIndex)) =Column : ^Data.Item[@Get(nFnIndex)].Column!
+        @AddLine(@Get(nFnIndex)) =Format : ^Data.Item[@Get(nFnIndex)].Format!
+        @AddLine(@Get(nFnIndex)) =Length : ^Data.Item[@Get(nFnIndex)].Length!
+        @AddLine(@Get(nFnIndex)) =Level : ^Data.Item[@Get(nFnIndex)].Level!
+        @AddLine(@Get(nFnIndex)) =Line : ^Data.Item[@Get(nFnIndex)].Line!
+        @AddLine(@Get(nFnIndex)) =Name : ^Data.Item[@Get(nFnIndex)].Name!
+        @AddLine(@Get(nFnIndex)) =NewLine : ^Data.Item[@Get(nFnIndex)].NewLine!
+        @AddLine(@Get(nFnIndex)) =Prespace : ^Data.Item[@Get(nFnIndex)].Prespace!
+        @AddLine(@Get(nFnIndex)) =Pretab : ^Data.Item[@Get(nFnIndex)].Pretab!
+        @AddLine(@Get(nFnIndex)) =StringTokenInfo[].Name! : ^Data.Item[@Get(nFnIndex)].StringTokenInfo[1].Name!
+        @AddLine(@Get(nFnIndex)) =StringTokenInfo[].Name! : ^Data.Item[@Get(nFnIndex)].StringTokenCount!
+        @AddLine(@Get(nFnIndex)) =Tobe : ^Data.Item[@Get(nFnIndex)].Tobe!
+        @AddLine(@Get(nFnIndex)) =TobeType : ^Data.Item[@Get(nFnIndex)].TobeType!
+        @AddLine(@Get(nFnIndex)) =Type : ^Data.Item[@Get(nFnIndex)].Type!
+    @End For
+#==============
+# 가 Stop
+#==============
+    @For %adx @Map.Get@(StartToken@) : @Map.Get@(LastToken@) 
+        @Set nFnIndex = %adx    
+        #가 1. 
+        @If '^Data.Item[@Get(nFnIndex)].Name!' = 'END' @Then
+        @AddLine(@Get(nFnIndex)) =--------------- @Stop(“인덱스”)1  ----------
+        @Stop(^Data.Count!)
+        @End If
+
+    @End For
+
+    @AddLine(125) =--------------- @Stop(“인덱스”)2  ----------
+    #2. (END 토큰 : 126)
+    #가 : @Stop(126)
+#==================================================================
+
+#===============
+# 가 SetInfo (Key, value) (StrToken 이랑 같이 쓰면 list처럼 쓸 수 있을 듯??)
+#===============
+    @AddLine(@Get(nFnIndex)) =--------------- @SetInfo ----------
+    @SetInfo("variable", "UV_String", "string")
+    @SetInfo("variable", "test", "string","test123")
+    @SetInfo("variable2", "test2", "string,list")
+    @AddLine(@Get(nFnIndex)) =@GetInfo("variable")
+    @AddLine(@Get(nFnIndex)) =@GetInfo("variable2")
+    @AddLine(@Get(nFnIndex)) =@GetInfo("variable", "UV_String") 
+    @AddLine(@Get(nFnIndex)) =@GetInfo("variable2", "test2") 
+    # -----------------------------------------------------------------
+    @AddLine(2) =--------------- @SetInfo ----------
+    @For %adx 1: 20
+        @Set nFnIndex = %adx 
+        @If ^Data.Item[@Get(nFnIndex)].Type! = Word @Then
+            @If @Get(sTemp) = Null @Then
+                @Set sTemp =^Data.Item[@Get(nFnIndex)].Name!
+            @Else
+                @Set sTemp = @Get(sTemp),^Data.Item[@Get(nFnIndex)].Name!
+            @End If
+        @End If
+    @End For
+    @Set sTemp ="@Get(sTemp)"
+    #@AddLine(3) =@Get(sTemp)
+    @SetInfo("variable3", "test3", "@Get(sTemp)")
+    @AddLine(3) =@GetInfo("variable3", "test3") 
+
+
+#=============
+# 불? (아마 ABL)이랑 같이 쓰는듯?? @SET_INDEX : SET_INDEX찾은 토큰의 범위를 변경하고자 할 때 사용된다. 
+#=============
+    # @AddLine(@Get(nFnIndex)) =--------------- @SET_INDEX ----------
+    # @SET_INDEX(2, 10)
+
+    # @If ^Data.Item[^Data.Count!].Type! <> Token @Then 
+    # @SET_INDEX(1, ^Data.Count! - 1) 
+    # @End if
+
+    
+#=============
+#불 @NewLine(“nIdx”)=”Value” :  해당 토큰의 NewLine 값을 변경한다.
+#============== 
+    @AddLine(@Get(nFnIndex)) =--------------- @NewLine ----------
+    ^Data.Item[4].Name!
+    ^Data.Item[4].NewLine!
+    @NewLine(4)=N 
+    ^Data.Item[4].NewLine!
+
+
+#======================
+# 가(,는 불) StrToken
+#======================
+
+    @AddLine(@Get(nFnIndex)) =--------------------
+    @AddLine(@Get(nFnIndex)) =StrToken
+    @AddLine(@Get(nFnIndex)) =--------------------
+    @AddLine(@Get(nFnIndex)) =--------------- @StrToken (구분자 공백) ----------
+    @Set sCheckText1 = @SubString@(^Data.Item[137].Name!@,2@,^Data.Item[137].Length!-2@)
+    #@Set sCheckText1 = ^Data.Item[137].Name!
+    #.1 @StrToken(문자열, 토큰 구분자) : 토큰 구분자로 토크닝 하여 메모리에 가지고 있는다.(구분자 제외)
+    @StrToken(@Get(sCheckText1), [_S1_] )
+    
+    # 2. @StrAllToken(문자열, 토큰 구분자) :  토큰 구분자로 토크닝 하여 메모리에 가지고 있는다.(구분자 포함)
+    @StrAllToken(@Get(sCheckText1), [_S1_])
+    
+    # 3. @GetStrToken(index, 토큰 구분자 변경) :  StrToken, StrAllToken 함수를 이용하여 토크닝 한 값을 가지고 올 때 사용 (index에는 count, all, 숫자가 올 수 있다. 
+    @AddLine(@Get(nFnIndex))=@GetStrToken(Count)
+    @AddLine(@Get(nFnIndex))=@GetStrToken(ALL)
+    @AddLine(@Get(nFnIndex))=@GetStrToken(ALL,/)
+    @AddLine(@Get(nFnIndex))=@GetStrToken(1)
+    #4 @GetStrTokens(시작인덱스, 끝 인덱스, 토큰 구분자 변경) :  StrToken, StrAllToken 함수를 이용하여 토크닝 한 값을 특정범위만 가지고 올 때
+    @AddLine(@Get(nFnIndex))=@GetStrTokens(1,3)
+    @AddLine(@Get(nFnIndex))=@GetStrTokens(1,3,/)
+    #5. @SetStrToken(index, 변경문자열) : StrToken, StrAllToken 함수를 이용하여 토크닝 한 값을 변경하고자 할 때 
+    @AddLine(@Get(nFnIndex))=@SetStrToken(1,1234@GetStrToken(3))
+    @AddLine(@Get(nFnIndex))=@GetStrToken(ALL)
+
+    @AddLine(@Get(nFnIndex)) =--------------- @StrToken2 (구분자 /) ----------
+    @Set sCheckText2 = ^Data.Item[139].Name!
+    ^Data.Item[139].Name!
+    #1
+    @StrToken(@Get(sCheckText2), / )
+    #2
+    #@StrAllToken(@Get(sCheckText2), , )
+    #3
+    @AddLine(@Get(nFnIndex))=@GetStrToken(Count)
+    @AddLine(@Get(nFnIndex))=@GetStrToken(ALL)
+    @AddLine(@Get(nFnIndex))=@GetStrToken(ALL,,)
+    @AddLine(@Get(nFnIndex))=@GetStrToken(1)
+    #4
+    @AddLine(@Get(nFnIndex))=@GetStrTokens(1,3)
+    @AddLine(@Get(nFnIndex))=@GetStrTokens(1,3,//)
+    #5
+    @AddLine(@Get(nFnIndex))=@SetStrToken(1,//@GetStrToken(1))
+    @AddLine(@Get(nFnIndex))=@GetStrToken(ALL)
+# 불 (, 를 인식 못 함)
+    @AddLine(@Get(nFnIndex)) =--------------- @StrToken3 (구분자 ,) ----------
+    @Set sCheckText2 = ^Data.Item[138].Name!
+    ^Data.Item[138].Name!
+    #1
+    @StrToken(@Get(sCheckText2), , )
+    #2
+    #@StrAllToken(@Get(sCheckText2), , )
+    #3
+    @AddLine(@Get(nFnIndex))=@GetStrToken(Count)
+    @AddLine(@Get(nFnIndex))=@GetStrToken(ALL)
+    @AddLine(@Get(nFnIndex))=@GetStrToken(ALL,,)
+    @AddLine(@Get(nFnIndex))=@GetStrToken(1)
+    #4
+    @AddLine(@Get(nFnIndex))=@GetStrTokens(1,3)
+    @AddLine(@Get(nFnIndex))=@GetStrTokens(1,3,,)
+    #5
+    @AddLine(@Get(nFnIndex))=@SetStrToken(1,//@GetStrToken(1))
+    @AddLine(@Get(nFnIndex))=@GetStrToken(ALL)
+
+#===========
+#불 ABL
+#===========
+    @ABL('TEST ( [F_1] [%] ) )')
+    @ABL('STOP ([;]')
+    @ABL('TEST [;;]')
+    
+@End Function
