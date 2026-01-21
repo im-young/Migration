@@ -21,42 +21,49 @@
     ####################### Main Logic(Start Conversion) ######################
     ###########################################################################
 	@For %adx @Get(nFnTokenIndex) : @Map.Get@(LastToken@) 
-    # Initialize
+    # 1. Initialize
         @Set nFnIndex = %adx + @Get(nFAddIndex)
         @Set sTemp = [_S_]
-        # PROGRAM-ID. 처리 ()
+        # 2. PROGRAM-ID. 処理
         @If '^Data.Item[@Get(nFnIndex)].Name!' = 'PROGRAM-ID' @Then
-            #Naming(네이밍)
+            #Naming
             @Set sTemp = @Naming@(^Data.Item[@Get(nFnIndex)+2].Name!@,Camel@)
             @Set sTemp = @Naming@(^Data.Item[@Get(nFnIndex)+2].Name!@,FirstUpper@)
             @Set sTemp = @Naming@(^Data.Item[@Get(nFnIndex)+2].Name!@,Hungarian@)
-            #기존 데이터 삭제
+            #既存のデータ削除
             @Data(@Get(nFnIndex)) = [NULL]
             @Data(@Get(nFnIndex)+1) = [NULL]
             @Data(@Get(nFnIndex)+2) = [NULL]
             @Set nAddTemp = @Get(nAddTemp) + 2
             #AddLine
             @AddLine(@Get(nFnIndex)) =public class @Get(sTemp) (){ 
-        #DATA DIVISION !!
+        #3. DATA DIVISION !!
         
-        # KeyWordList (PROCEDURE DIVISION)
+        #4. KeyWordList (PROCEDURE DIVISION)
         @Else If @Pos@(|@UpperCase@(^Data.Item[@Get(nFnIndex)].Name!@)|@,@Map.Get@(KeyWordList@)@) > 0 @Then
             @Set nFAddIndex = %adx + @^Data.Item[@Get(nFnIndex)].Name!(@Get(nFnIndex))
             @Set nAddTemp = @Get(nAddTemp) + 1    
-        # 주석 처리 !!
-        @Else If condition @Then   
-        # STOP RUN : }
+        #5. comment 処理
+        @Else If ^Data.Item[@Get(nFnIndex)].Type! = Comment @Then
+            # * ->削除
+            @Set sTemp = @SubString@(^Data.Item[@Get(nFnIndex)].Name!@,2@,^Data.Count!@)
+            #既存のデータ削除
+            @Data(@Get(nFnIndex)) = [NULL]
+            @Set nAddTemp = @Get(nAddTemp) + 1
+            #@AddLine : // + @SubString( * から終わりまで)
+            @AddLine(@Get(nFnIndex)) =// @Get(sTemp)
+        #6.  STOP RUN : }
         @Else If '^Data.Item[@Get(nFnIndex)].Name!' = 'STOP' AND  '^Data.Item[@Get(nFnIndex)+1].Name!' = 'RUN' @Then
             @Data(@Get(nFnIndex)) = [NULL]
             @Data(@Get(nFnIndex)+1) = [NULL]
             @AddLine(@Get(nFnIndex)) =} 
             @Set nAddTemp = @Get(nAddTemp) + 1                
-        # DIVISION 텍스트 삭제
+        #7. DIVISION text削除
         @Else
             @Data(@Get(nFnIndex)) = [NULL]
         @End If
 
-        # . 삭제
+        #8. . 削除
         @If '^Data.Item[@Get(nFnIndex)+1].Type!' <> 'Comment' AND '^Data.Item[@Get(nFnIndex)+1].Name!' = '.' @Then
             @Data(@Get(nFnIndex)+1) = [NULL]
             @Set nAddTemp = @Get(nAddTemp) + 1
@@ -123,7 +130,7 @@
             @Set nFnIndex = ^Data.Item[@Get(nFnIndex)].Name!(@Get(nFnIndex)+1)
             @Set nAddTemp = @Get(nAddTemp) + 1
         
-        # 3. 명령어가 끝일 때(1. . 2. 다른 명령어, 3. STOP)　함수 나가기 !!!
+        # 3. 명령어가 끝일 때(1. . 2. 다른 명령어, 3. STOP)　함수 나가기 !!
             # .일떄 ->  삭제 & break
         @Else If '^Data.Item[@Get(nFnIndex)+1].Name!' = '.' OR '^Data.Item[@Get(nFnIndex)+1].Name!' = 'STOP' OR @Pos@(|@UpperCase@(^Data.Item[@Get(nFnIndex)].Name!@)|@,@Map.Get@(KeyWordList@)@) > 0 @Then
             @Break
@@ -153,5 +160,3 @@
     # 함수 반환값 
     @Set DISPLAY = @Get(nFAddIndex) 
 @End Function
-
-
