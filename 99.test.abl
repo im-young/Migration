@@ -82,29 +82,7 @@
     #@AddLine(3) =@Get(sTemp)
     @SetInfo("variable3", "test3", "@Get(sTemp)")
     @AddLine(3) =@GetInfo("variable3", "test3") 
-
-
-#=============
-# 불? (아마 ABL)이랑 같이 쓰는듯?? @SET_INDEX : SET_INDEX찾은 토큰의 범위를 변경하고자 할 때 사용된다. 
-#=============
-    # @AddLine(@Get(nFnIndex)) =--------------- @SET_INDEX ----------
-    # @SET_INDEX(2, 10)
-
-    # @If ^Data.Item[^Data.Count!].Type! <> Token @Then 
-    # @SET_INDEX(1, ^Data.Count! - 1) 
-    # @End if
-
     
-#=============
-#불 @NewLine(“nIdx”)=”Value” :  해당 토큰의 NewLine 값을 변경한다.
-#============== 
-    @AddLine(@Get(nFnIndex)) =--------------- @NewLine ----------
-    ^Data.Item[4].Name!
-    ^Data.Item[4].NewLine!
-    @NewLine(4)=N 
-    ^Data.Item[4].NewLine!
-
-
 #======================
 # 가(,는 불) StrToken
 #======================
@@ -170,6 +148,29 @@
     #5
     @AddLine(@Get(nFnIndex))=@SetStrToken(1,//@GetStrToken(1))
     @AddLine(@Get(nFnIndex))=@GetStrToken(ALL)
+
+
+#=============
+# 불? (아마 ABL)이랑 같이 쓰는듯?? @SET_INDEX : SET_INDEX찾은 토큰의 범위를 변경하고자 할 때 사용된다. 
+#=============
+    # @AddLine(@Get(nFnIndex)) =--------------- @SET_INDEX ----------
+    # @SET_INDEX(2, 10)
+
+    # @If ^Data.Item[^Data.Count!].Type! <> Token @Then 
+    # @SET_INDEX(1, ^Data.Count! - 1) 
+    # @End if
+
+    
+#=============
+#불 @NewLine(“nIdx”)=”Value” :  해당 토큰의 NewLine 값을 변경한다.
+#============== 
+    @AddLine(@Get(nFnIndex)) =--------------- @NewLine ----------
+    ^Data.Item[4].Name!
+    ^Data.Item[4].NewLine!
+    @NewLine(4)=N 
+    ^Data.Item[4].NewLine!
+
+
 
 #===========
 #불 ABL
