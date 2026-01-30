@@ -27,29 +27,30 @@
         # 2. PROGRAM-ID. 処理
         @If '^Data.Item[@Get(nFnIndex)].Name!' = 'PROGRAM-ID' @Then
             #Naming
-            @Set sTemp = @Naming@(^Data.Item[@Get(nFnIndex)+2].Name!@,Camel@)
-            @Set sTemp = @Naming@(^Data.Item[@Get(nFnIndex)+2].Name!@,FirstUpper@)
+            # @Set sTemp = @Naming@(^Data.Item[@Get(nFnIndex)+2].Name!@,Camel@)
+            # @Set sTemp = @Naming@(^Data.Item[@Get(nFnIndex)+2].Name!@,FirstUpper@)
             @Set sTemp = @Naming@(^Data.Item[@Get(nFnIndex)+2].Name!@,Hungarian@)
             #既存のデータ削除
             @Data(@Get(nFnIndex)) = [NULL]
-            @Data(@Get(nFnIndex)+1) = [NULL]
+            #@Data(@Get(nFnIndex)+1) = [NULL]
+            #class name
             @Data(@Get(nFnIndex)+2) = [NULL]
-            @Set nAddTemp = @Get(nAddTemp) + 2
+            @Set nAddTemp = @Get(nAddTemp) + 1
             #AddLine
             @AddLine(@Get(nFnIndex)) =public class @Get(sTemp) (){ 
+            @Continue
         #3. DATA DIVISION !!
-        
-        #4. KeyWordList (PROCEDURE DIVISION)
-        @Else If @Pos@(|@UpperCase@(^Data.Item[@Get(nFnIndex)].Name!@)|@,@Map.Get@(KeyWordList@)@) > 0 @Then
-            @Set nFAddIndex = %adx + @^Data.Item[@Get(nFnIndex)].Name!(@Get(nFnIndex))
-            @Set nAddTemp = @Get(nAddTemp) + 1    
+        #4. MAinKeyWordList (PROCEDURE DIVISION)
+        @Else If @Pos@(|@UpperCase@(^Data.Item[@Get(nFnIndex)].Name!@)|@,@Map.Get@(MainKeyWordList@)@) > 0 @Then
+            @Set nAddTemp = @^Data.Item[@Get(nFnIndex)].Name!(@Get(nFnIndex)+1)
+            @Data(@Get(nFnIndex)) = [NULL]
+            #@Set nAddTemp = @Get(nAddTemp) + 1    
         #5. comment 処理
         @Else If ^Data.Item[@Get(nFnIndex)].Type! = Comment @Then
             # * ->削除
             @Set sTemp = @SubString@(^Data.Item[@Get(nFnIndex)].Name!@,2@,^Data.Count!@)
             #既存のデータ削除
             @Data(@Get(nFnIndex)) = [NULL]
-            @Set nAddTemp = @Get(nAddTemp) + 1
             #@AddLine : // + @SubString( * から終わりまで)
             @AddLine(@Get(nFnIndex)) =// @Get(sTemp)
         #6.  STOP RUN : }
@@ -62,7 +63,6 @@
         @Else
             @Data(@Get(nFnIndex)) = [NULL]
         @End If
-
         #8. . 削除
         @If '^Data.Item[@Get(nFnIndex)+1].Type!' <> 'Comment' AND '^Data.Item[@Get(nFnIndex)+1].Name!' = '.' @Then
             @Data(@Get(nFnIndex)+1) = [NULL]
@@ -73,9 +73,8 @@
 	@End For
 @End Function
 ######################################
-########### KeyWordList ##############
+########### MainKeyWordList ##############
 ######################################
-
 # =====================================
 #  DISPLAY 
 # =====================================
@@ -88,75 +87,63 @@
     #----------------------------------------------------
     # Int
     #----------------------------------------------------
-    @Int nFnIndex
-    @Int nFAddIndex
-    @Int nAddTemp 
+    @Int nDisplayIndex
+    @Int nDisplayAddIndex
+    @Int nDisplayAddTemp 
     #----------------------------------------------------
     # Initialize
     #----------------------------------------------------
-    @Set nFnIndex = 0
-    @Set nFAddIndex = 0
-    @Set nAddTemp = 0
+    @Set nDisplayIndex = 0
+    @Set nDisplayAddIndex = 0
+    @Set nDisplayAddTemp = 0
+    @Set sTemp = [_S_]
     @For %bdx @Get(nFnTokenIndex) : @Map.Get@(LastToken@) 
-        # Initialize
-        @Set nFnIndex = %bdx + @Get(nFAddIndex)
-        @Set sTemp = [_S_]
-        # 1. '' 가 있을 떄
-        #@If '@SubString@(^Data.Item[@Get(nFnIndex)].Name!@,1@,1@)' = ''' OR  '@SubString@(^Data.Item[@Get(nFnIndex)].Name!@,1@,1@)' = '"'@Then
-        @If ^Data.Item[@Get(nFnIndex)].Type! = String @Then    
-            # 작은 따옴표 없애기 (첫번째랑 마지막 빼고 슬라이싱 해오기)    
-            # text 합치기 !! -> 함수로 못 만드나?
+        @Set nDisplayIndex = %bdx + @Get(nDisplayAddTemp)
+        # '' or ''X
+        @If ^Data.Item[@Get(nDisplayIndex)].Type! = String @Then
+            # '' -> "" 
             @If @Get(sTemp) = [_S_] @Then
-                @Set sTemp = @Replace@(^Data.Item[@Get(nFnIndex)].Name!@,'@,"@)
+                @Set sTemp = @Replace@(^Data.Item[@Get(nDisplayIndex)].Name!@,'@,"@)
                 #@Set sTemp = @SubString@(^Data.Item[@Get(nFnIndex)].Name!@,2@,^Data.Item[@Get(nFnIndex)].Length!-2@)
             @Else
-                @Set sTemp = @Get(sTemp) @Replace@(^Data.Item[@Get(nFnIndex)].Name!@,'@,"@)
+                @Set sTemp = @Get(sTemp) + " " + @Replace@(^Data.Item[@Get(nDisplayIndex)].Name!@,'@,"@)
                 #@Set sTemp = @Get(sTemp) + @SubString@(^Data.Item[@Get(nFnIndex)].Name!@,2@,^Data.Item[@Get(nFnIndex)].Length!-2@)
             @End If
-            @Set nAddTemp = @Get(nAddTemp) + 1
-
-        # 2. '' 가 없을 때    
-        @Else If condition @Then        
-            # text 합치기 !!! -> 함수로 못 만드나?
-            @If @Get(sTemp) = [_S_] @Then
-                @Set sTemp = @Get(sTemp)            
-            @Else
-                @Set sTemp = @Get(sTemp) ^Data.Item[@Get(nFnIndex)].Name!
-            @End If
-            @Set nAddTemp = @Get(nAddTemp) + 1
-        # 5. 다른 함수를 탔다가 다시 돌아와야 할 때(Function, zero, space 등)
-        @Else If @Pos@(|@UpperCase@(^Data.Item[@Get(nFnIndex)].Name!@)|@,@Map.Get@(KeyWordList@)@) > 0 @Then
-            @Data(@Get(nFnIndex)) = [NULL]
-            @Set nFnIndex = ^Data.Item[@Get(nFnIndex)].Name!(@Get(nFnIndex)+1)
-            @Set nAddTemp = @Get(nAddTemp) + 1
-        
-        # 3. 명령어가 끝일 때(1. . 2. 다른 명령어, 3. STOP)　함수 나가기 !!
-            # .일떄 ->  삭제 & break
-        @Else If '^Data.Item[@Get(nFnIndex)+1].Name!' = '.' OR '^Data.Item[@Get(nFnIndex)+1].Name!' = 'STOP' OR @Pos@(|@UpperCase@(^Data.Item[@Get(nFnIndex)].Name!@)|@,@Map.Get@(KeyWordList@)@) > 0 @Then
-            @Break
-       
-
-            
-        # 4. 무시해야 할 명령어가 있을 때 (KWDdisplyList)
+        # ADVANCING(print or println)
+        @Else If '^Data.Item[@Get(nDisplayIndex)].Name!' = 'ADVANCING' @Then
+            @Data(@Get(nDisplayIndex)) = [NULL]
+            @Set nDisplayAddTemp = @Get(nDisplayAddTemp) + 1
+            @Set nDisplayAddIndex = @Get(nDisplayAddIndex)+@Get(nDisplayAddTemp)
+            @Set nDisplayAddTemp = 0
+            @Break    
+        # SubKeyWordList (削除)
+        @Else If @Pos@(|@UpperCase@(^Data.Item[@Get(nDisplayIndex)].Name!@)|@,@Map.Get@(SubKeyWordList@)@) > 0 @Then   
+        # text 変数名 
         @Else
-            
-            @Set nAddTemp = @Get(nAddTemp) + 1
-
+            @If @Get(sTemp) = [_S_] @Then
+                @Set sTemp = ^Data.Item[@Get(nDisplayIndex)].Name!
+            @Else
+                @Set sTemp = @Get(sTemp) + " " +  ^Data.Item[@Get(nDisplayIndex)].Name!
+            @End If         
         @End If
-        
-        
-    
-    
-        @Set nFAddIndex = @Get(nFAddIndex)+@Get(nAddTemp)
-        @Set nAddTemp = 0
+        @Data(@Get(nDisplayIndex)) = [NULL]
+        @Set nDisplayAddTemp = @Get(nDisplayAddTemp) + 1
+        @Set nDisplayAddIndex = @Get(nDisplayAddIndex)+@Get(nDisplayAddTemp)
+        @Set nDisplayAddTemp = 0
+        # 関数exit (명령어가 끝일 때(1. . 2. 다른 명령어(MainKWD), 3. STOP)
+        @If '^Data.Item[@Get(nDisplayIndex)+1].Type!' <> 'Comment' AND @Trim@('^Data.Item[@Get(nDisplayIndex)+1].Name!'@) = '.' @Then 
+            @Break
+        @Else If '^Data.Item[@Get(nDisplayIndex)+1].Name!' = 'STOP' @Then
+            @Break
+        @Else If @Pos@(|@UpperCase@(^Data.Item[@Get(nDisplayIndex)+1].Name!@)|@,@Map.Get@(MainKeyWordList@)@) > 0 @Then
+            @Break
+        @End If
     @End For
-    @Data(@Get(nFnIndex)) = [NULL]
     #AddLine (ADVANCING)
-    @If '^Data.Item[@Get(nFnIndex)].Name!' = 'ADVANCING' @Then
-        @AddLine(@Get(nFnIndex)) =System.out.plint(@Get(sTemp));
-    @Else
-        @AddLine(@Get(nFnIndex)) =System.out.plintln(@Get(sTemp));
+    @If '^Data.Item[@Get(nDisplayIndex)].Name!' = 'ADVANCING' @Then
+        @AddLine(@Get(nDisplayIndex)) =System.out.plint(@Get(sTemp));  
+    @Else 
+        @AddLine(@Get(nDisplayIndex)) =System.out.plintln(@Get(sTemp)); 
     @End If
-    # 함수 반환값 
-    @Set DISPLAY = @Get(nFAddIndex) 
+    @Set DISPLAY = @Get(nDisplayAddIndex)
 @End Function
